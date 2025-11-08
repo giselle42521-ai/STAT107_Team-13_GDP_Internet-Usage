@@ -1,0 +1,89 @@
+---
+title: "Final Project"
+output: html_document
+date: "2025-11-07"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+Title: Done by Leny
+  
+Abstract: Done by Leny
+
+Introduction: Done by Leny 
+
+Data: Done by Tolu
+
+Visualization: Done by Tolu
+
+Analysis: Done by Giselle Arias Vivas
+Our plan is to use only the data sets from the years 2005 all the way to 2023 since this gives us more numerical data. We will also provide by the end of the final project the comparison between GDP and internet users between those years. We will plot this information in a graph to show the points of how they are related to each other. We will continue to clean the data sets so that it will only show the observations that we want. 
+
+I also created a new repository on Github called final project so that my group and I can add all the data and codes we used through out this project. 
+
+
+The r coding below shows what I have done to clean up the data a little bit and so that it it more legible for us to read and understand. I am not sure if the coding is correct but I was able to do this with the help of the lecture slides and also google.
+
+
+```{r}
+head(GDP)
+head(Internet_Users)
+
+summary(GDP)
+summary(Internet_Users)
+
+colSums(is.na(GDP))
+colSums(is.na(Internet_Users))
+
+library(tidyverse)
+install.packages("dplyr")
+
+year_cols <- colnames(GDP)[-(1:2)]
+GDP[year_cols] <- lapply(GDP[year_cols], function(x) as.numeric(as.character(x)))
+
+
+GDP_long <- GDP %>%
+  pivot_longer(
+    cols = -c(`Data Source`, `World Development Indicators`),  # pivot all year columns
+    names_to = "Year",
+    values_to = "GDP_Value"
+  )
+
+
+year_cols <- colnames(Internet_Users)[-(1:2)]
+Internet_Users[year_cols] <- lapply(Internet_Users[year_cols], function(x) as.numeric(as.character(x)))
+
+Internet_Users_long <- Internet_Users %>%
+  pivot_longer(
+    cols = all_of(year_cols),
+    names_to = "Year",
+    values_to = "Internet_Value"
+  )
+
+GDP_long$Year <- as.numeric(GDP_long$Year)
+
+
+
+```
