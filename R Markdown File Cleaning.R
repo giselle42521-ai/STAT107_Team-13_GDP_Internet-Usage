@@ -125,3 +125,40 @@ ggplot(internet_trend, aes(x = Year, y = Global_Average)) +
     y = "Average Internet Users (%)"
   ) +
   theme_minimal()                                    
+
+
+
+ Correlational Graph Between GDP vs Internet Users
+  library(ggplot2)
+library(dplyr)     
+ merged_data <- gdp_clean %>%
+  inner_join(net_clean, by = c("Country", "Year"))    
+merged_data <- merged_data %>%
+  rename(GDP = GDP_per_capita,
+         Internet = Internet_Users)     
+ ggplot(merged_data, aes(x = GDP, y = Internet)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = TRUE, linewidth = 1) +
+  labs(
+    title = "Correlation Between GDP per Capita and Internet Usage (2005–2024)",
+    x = "GDP per Capita (USD)",
+    y = "Internet Users (% of Population)"
+  ) +
+  theme_minimal()   
+
+
+
+Graph with the three countries
+library(ggplot2)
+library(dplyr) 
+three_countries <- merged_data %>%
+  filter(Country %in% c("United States", "China", "India"))
+ggplot(three_countries, aes(x = GDP, y = Internet, color = Country)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1.2) +
+  labs(
+    title = "GDP vs Internet Usage for U.S., China, and India",
+    x = "GDP per Capita (USD)",
+    y = "Internet Users (% of Population)"
+  ) +
+  theme_minimal()                                    
