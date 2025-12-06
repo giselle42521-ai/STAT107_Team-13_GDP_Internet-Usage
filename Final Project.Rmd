@@ -1,0 +1,268 @@
+---
+title: "Final Project"
+output:
+  pdf_document: default
+  html_document: default
+date: "2025-12-05"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = True)
+```
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+Bridging the Digital Divide: Analyzing the Relationship Between Internet Access, Economic, and Income Inequality Across Countries (2005 - 2024)
+
+Abstract:
+
+This project examines how differences in digital access correspond to economic and income inequality across countries. Using data from the World Bank and International Telecommunication Union(ITU), we analyzed the relationships between two key indicators: internet access (% of population) and GDP growth (annual %), from 2005 to 2024. After merging and cleaning the datasets, we restricted our sample to countries with complete information on GDP and internet access. Initial findings suggest that inequality, although no firm casual conclusions can be made due to the observational nature of the data. We used R to apply correlation and regression analyses to these variables, quantifying their relationship and exploring their evolution over time. This research sheds light on the potential role of technological infrastructure in shaping global economic disparities and provides insights into how improved digital inclusion may be a factor of more equitable economic development.
+
+
+Introduction:
+
+Technological access has become an indicator of modern economic progress. While the rapid expansion of internet accessibility has reshaped communication, education, and productivity across the globe, not all countries have benefited equally. This inequity, the digital divide, may influence a country’s economic growth and further distribute wealth internally. 
+
+This work aims to investigate the association between access to the internet and GDP growth as measured by the Gini index, over various countries from 2005 to 2024. Specifically, we pose the following questions:
+
+Does technological access have a measurable relationship with economic performance?
+How have these relationships evolved over time?
+
+Understanding these dynamics is important for policymakers, economists, and international development organizations with a focus on inclusive economic growth. We expect to observe a relationship between digital access and GDP growth; however, no causal inferences can be made due to the observational nature of this data. By analyzing open-access datasets through World Bank and ITU, this study provides empirical evidence on how digital infrastructure shapes global economic equity and informs future efforts toward bridging the digital divide.
+
+
+Data: 
+
+The data used in this project are sourced from the World Bank’s World Development Indicators, focusing on two primary variables: Internet Users (as a percentage of the population) and GDP Growth (annual %). The datasets include information for over 200 countries spanning from just 2005 - 2024. After cleaning and restructuring, the data provides yearly records showing how digital connectivity and economic performance evolve across different nations. The goal of using this data is to explore whether greater internet access correlates with higher economic growth and to identify patterns of technological inequality between developed and developing regions.
+
+```{r}
+library(readxl)
+library(dplyr)
+library(janitor)
+library(writexl)
+
+raw <- read_excel("GDP.xlsx", col_names = FALSE)
+header <- as.character(unlist(raw[5, ]))
+df <- raw[-(1:5), ] 
+colnames(df) <- header
+
+df <- df %>% select(where(~ !all(is.na(.))))
+
+years <- as.character(2005:2024)
+
+df_filtered <- df %>%
+  select(
+    `Country Name`,
+    `Indicator Name`,
+    all_of(years)
+  )
+
+write_xlsx(df_filtered, "GDP_2005_2024_no_codes.xlsx")
+
+
+
+raw <- read_excel("Internet Users.xlsx", col_names = FALSE)
+header <- as.character(unlist(raw[5, ]))
+df <- raw[-(1:5), ] 
+colnames(df) <- header 
+
+df <- df %>% select(where(~ !all(is.na(.))))
+
+years <- as.character(2005:2024)
+
+df_filtered <- df %>%
+  select(
+    `Country Name`,
+    `Indicator Name`,
+    all_of(years)
+  )
+write_xlsx(df_filtered, "GDP_2005_2024_no_codes.xlsx")
+
+```
+
+
+```{r}
+
+raw <- read_excel("Internet Users.xlsx", col_names = FALSE)
+header <- as.character(unlist(raw[5, ]))
+df <- raw[-(1:5), ] 
+colnames(df) <- header 
+
+df <- df %>% select(where(~ !all(is.na(.))))
+
+years <- as.character(2005:2024)
+
+df_filtered <- df %>%
+  select(
+    `Country Name`,
+    `Indicator Name`,
+    all_of(years)
+  )
+
+write_xlsx(df_filtered, "InternetUsers_2005_2024_clean.xlsx")
+
+
+gdp <- read_excel("GDP_2005_2024_no_codes.xlsx")
+internet <- read_excel("InternetUsers_2005_2024_clean.xlsx")
+
+gdp_long <- gdp %>%
+  pivot_longer(cols = `2005`:`2024`,
+               names_to = "Year",
+               values_to = "Value") %>%
+  mutate(Year = as.numeric(Year))
+
+internet_long <- internet %>%
+  pivot_longer(cols = `2005`:`2024`,
+               names_to = "Year",
+               values_to = "Value") %>%
+  mutate(Year = as.numeric(Year))
+
+
+gdp_trend <- gdp_long %>%
+  group_by(Year) %>%
+  summarize(Global_Average = mean(Value, na.rm = TRUE))
+
+internet_trend <- internet_long %>%
+  group_by(Year) %>%
+  summarize(Global_Average = mean(Value, na.rm = TRUE))
+
+ggplot(gdp_trend, aes(x = Year, y = Global_Average)) +
+  geom_line(size = 1.2, color = "orange") +
+  geom_point(size = 2) +
+  labs(
+    title = "Global GDP Trend (2005–2024)",
+    x = "Year",
+    y = "Average GDP"
+  ) +
+  theme_minimal()
+
+ggplot(internet_trend, aes(x = Year, y = Global_Average)) +
+  geom_line(size = 1.2, color = "orange") +
+  geom_point(size = 2) +
+  labs(
+    title = "Global Internet Users Trend (2005–2024)",
+    x = "Year",
+    y = "Average Internet Users (%)"
+  ) +
+  theme_minimal()
+
+```
+
+The first graph shows the GDP trend from the years of 2005 - 2024. This GDP shows that production of services and goods was very high during the year of 2005, but as the years went by they took a drastic fall in the year of 2020. And we could say that this makes sense because the year of 2020 was the year where covid-19 had happened. And during this time,  it was a lot more difficult to get services from other countries and to receive goods. But then during the year of 2021 and on, the GDP rate went up by a lot. 
+
+Now, take a look at the Internet Users graph from the years of 2005 - 2024. You can see that with the development of the internet along with people using the internet, the year of 2005 was very low, between the 238 countries. Which makes sense because the technology back then was not as well developed as it is today. And because of this, not many people had great access to the internet. But now, it has risen throughout the years for all of the 238 countries involved in this graph. 
+
+When the two graphs are put together, you can see that there is a correlation between GDP and Internet Usage. As GDP goes up so does the use of the internet. The x- axis shows how much money or wealth a specific country had and the y-axis is the percentage of internet usage.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+merged_data <- gdp_clean %>%
+  inner_join(net_clean, by = c("Country", "Year")) %>%
+  rename(GDP = GDP_per_capita,
+         Internet = Internet_Users)
+
+merged_data <- merged_data %>%
+  filter(Year >= 2005, Year <= 2024)
+
+ggplot(merged_data, aes(x = GDP, y = Internet)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = TRUE, linewidth = 1.2) +
+  labs(
+    title = "Correlation Between GDP per Capita and Internet Usage (2005–2024)",
+    x = "GDP per Capita (USD)",
+    y = "Internet Users (% of Population)"
+  ) +
+  theme_minimal()
+
+```
+
+As shown in this graph, it shows that the United States started off very low for GDP during the year of 2005 compared to India and China. Then with usage of the internet, India was the lowest one which makes sense because India back in the years, were not as well developed with technology as the other two countries were. The GDP between the three countries show that they are almost alike. They all took a fall during the year of 2020 and then they all went up drastically the next year after. Now with internet usage, China and India started off about the same, meaning that their technology back in the day was not well improved as it is today. But with the United States, the internet was good but not as good as it is today.
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+three_countries <- merged_data %>%
+  filter(Country %in% c("United States", "China", "India"))
+
+ggplot(three_countries, aes(x = GDP, y = Internet, color = Country)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1.2) +
+  labs(
+    title = "GDP vs Internet Usage for U.S., China, and India",
+    x = "GDP per Capita (USD)",
+    y = "Internet Users (% of Population)"
+  ) +
+  theme_minimal()
+
+
+```
+
+Analysis: 
+
+While looking at the GDP graph and the internet users graph, by the looks of it, it may not look like there is much correlation between the two. The GDP graph shows the graphing points as going up and down drastically throughout the years. While the Internet users graph shows, almost a straight linear line, and it is going progressively high as the years go by. But when the graphs are put together you can see that when the average GDP goes up so does the usage in internet users. So, overall there is a positive correlation between the two. With the line being linear, you could say that the increase of internet users moves proportionally with GDP. 
+
+The correlation also suggests that with higher GDP there seems to be more affordable internet access, possibly high levels of education and the use of technology is getting better throughout the years. We can also assume that as the years get better with development, both GDP and internet usage shows an economic growth and a rapid expansion of technology. 
+
+The graph with the three different colored lines, shows just three main countries that we took a look at much more deeply. The three main countries that we chose were the U.S, China, and India. The reason for this is because they represent both high, middle, and lower income countries. We would say that for obvious reasons, when these countries are mentioned, you can assume that their digital growth will be different.
+
+
+Correlation Table for GDP vs Internet Users (2005 - 2024)
+
+Country 
+Correlation (r)
+R^2
+p-value
+t-statistic
+
+United States
+0.157845
+0.024915
+0.518677
+0.659073
+
+China
+-0.852564
+0.726865
+0.000002
+-6.921088
+
+India
+-0.451401
+0.203763
+0.068941
+-1.959236
+
+
+
+For the United States, the R means that there is a middle ground between GDP and internet use. The correlation is weak and positive. The R^2 shows that about only 2.5% of usage is explained by GDP. And that this p-value is not significant at all 
+For China, the GDP and the internet usage did not rise proportionally and that there were some years where the rates grew at different speeds, indicating a strong and negative correlation. The R^2 means that 73% of the internet usage is explained by GDP. Since the p-value is small, the relationship signifies that it is statistically significant. As you can see, the correlation is negative and this could possibly mean that GDP started off pretty high in 2005 and drastically stayed that way throughout the years. 
+Lastly for India, the correlation shows moderation. The R^2 shows that only 20% of internet usage is explained by GDP. The p-value is above 0.05 by 0.02 points, showing that it is not statistically significant. 
+
+Conclusion:
+
+In conclusion, you could say that with all the data that we had and all the cleaning up that was done, you can say that the use of the internet and GDP do correlate with each other. As shown in the graphs over 200 countries during the year of 2005 is when it was not the most well improved for GDP and internet usage but as the years went by, they both slowly improved drastically. Although GDP took a fall in 2020, many countries still found ways to improve. 
+
+When GDP and internet usage are combined together, it is shown that they are closely related to each other. We made a conclusion that as the GDP rises so does the usage of the internet. 
+
+When looking closely at three specific countries like the United States, China and India, their improvement has gotten a lot better. As the final result, you could see that GDP and internet usage correlate with each other. 
+
+Member contributions:
+
+Title, Abstract and Introduction: Leny 
+Data/Cleaning: Tolu
+Analysis and Conclusion: Giselle 
